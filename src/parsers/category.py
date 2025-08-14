@@ -52,24 +52,10 @@ class CategoryPageParser:
             return 1
 
         # Проверяем наличие кнопки следующего блока
-        next_block_button = soup.find('div',
+        next_block_button = soup.find( ['div', 'a'],
                                       class_='cm-history ty-pagination__item hidden-phone ty-pagination__range cm-ajax')
 
-        # Ищем диапазоны вида "x - y"
-        range_text = None
-        range_elements = soup.find_all(string=re.compile(r'\d+\s*-\s*\d+'))
-        for element in range_elements:
-            match = re.search(r'(\d+)\s*-\s*(\d+)', element)
-            if match:
-                start, end = int(match.group(1)), int(match.group(2))
-                # Проверяем, что это похоже на пагинацию
-                if 1 <= start <= end <= 1000 and end > visible_max:
-                    range_text = element
-                    visible_max = max(visible_max, end)
-                    logger.debug(f"Найден диапазон страниц: {element.strip()}")
-                    break
-
-        if not next_block_button and not range_text:
+        if not next_block_button:
             # Если нет кнопки следующего блока и диапазонов - берем максимальную видимую
             total_pages = visible_max
             logger.info(f"Следующий блок страниц не найден. Всего страниц: {total_pages}")
@@ -92,7 +78,7 @@ class CategoryPageParser:
         checks_made = 0 # Счётчик общего количества уже проверенных страниц
         base_url = url.rstrip('/')
 
-        while current_page <= 300 and checks_made < max_checks and consecutive_errors < max_consecutive_errors:
+        while current_page <= 1000 and checks_made < max_checks and consecutive_errors < max_consecutive_errors:
             test_url = f"{base_url}/page-{current_page}/"
             logger.debug(f"Проверяем страницу page-{current_page}")
 
